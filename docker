@@ -1,0 +1,57 @@
+配置说明：
+
+面向外面的IP都是172.19.129.18，不用localhost
+
+eureka-server-cluster-8761
+eureka-server-cluster-8762
+eureka-server-cluster-8763
+
+config-server-cluster-8092
+config-server-cluster-8093
+config-server-cluster-8094
+
+
+################################################docker环境###################################################################
+(1)下载ubuntu镜像
+(2)手动下载linux版本的jar包
+(3)dockerFile文件
+
+ubuntu_java_dockerFile
+
+FROM ubuntu:14.04
+MAINTAINER xqsong "286624384@qq.com"
+RUN mkdir /usr/local/java
+ADD jdk-8u271-linux-x64.tar.gz /usr/local/java/
+RUN ln -s /usr/local/java/jdk1.8.0_271 /usr/local/java/jdk
+
+ENV JAVA_HOME /usr/local/java/jdk
+ENV JRE_HOME ${JAVA_HOME}/jre
+ENV CLASSPATH .:${JAVA_HOME}/lib:${JRE_HOME}/lib
+ENV PATH ${JAVA_HOME}/bin:$PATH
+
+(4)构建基于ubuntu的java镜像(dockerFile)
+docker build -t="仓库名称/镜像名称:版本标签"(docker build -t="xqsong/ubuntu-jdk:v1")
+
+####################启动docker中的eureka-server-cluster####################
+docker run -d --name eureka-sever-cluster-8761 -p 172.19.129.18:8761:8761 --add-host peer1:172.19.129.18 --add-host peer2:172.19.129.18  --add-host peer3:172.19.129.18 -v F:\docker_demo\program\eureka-server-cluster-8761.jar:/home/eureka-server-cluster-8761.jar -v F:\docker_demo\logs\eureka-server-cluster-8761:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/eureka-server-cluster-8761.jar
+docker run -d --name eureka-sever-cluster-8762 -p 172.19.129.18:8762:8762 --add-host peer1:172.19.129.18 --add-host peer2:172.19.129.18  --add-host peer3:172.19.129.18 -v F:\docker_demo\program\eureka-server-cluster-8762.jar:/home/eureka-server-cluster-8762.jar -v F:\docker_demo\logs\eureka-server-cluster-8762:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/eureka-server-cluster-8762.jar
+docker run -d --name eureka-sever-cluster-8763 -p 172.19.129.18:8763:8763 --add-host peer1:172.19.129.18 --add-host peer2:172.19.129.18  --add-host peer3:172.19.129.18 -v F:\docker_demo\program\eureka-server-cluster-8763.jar:/home/eureka-server-cluster-8763.jar -v F:\docker_demo\logs\eureka-server-cluster-8763:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/eureka-server-cluster-8763.jar
+
+(172.19.129.18:8761:8761) ===> (8761:8761) 可以绑定主机的所有IP端口 172.19.129.18:8761 或 localhost:8761，127.0.0.1:8761都可以访问
+
+-d: 后台运行容器
+--name：指定容器名称
+-p：指定宿主机器的端口与容器端口直接的映射
+-v：指定宿主机器的路径与容器路径的映射， 映射jar包文件，映射日志目录
+--add-host：在容器中添加主机名与ip地址之间的映射
+
+
+####################启动docker中的config-server-cluster####################
+docker run -d --name config-server-cluster-8092 -p 172.19.129.18:8092:8092  -v F:\docker_demo\program\config-server-cluster-8092.jar:/home/config-server-cluster-8092.jar -v F:\docker_demo\logs\config-server-cluster-8092:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/config-server-cluster-8092.jar
+docker run -d --name config-server-cluster-8093 -p 172.19.129.18:8093:8093  -v F:\docker_demo\program\config-server-cluster-8093.jar:/home/config-server-cluster-8093.jar -v F:\docker_demo\logs\config-server-cluster-8093:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/config-server-cluster-8093.jar
+docker run -d --name config-server-cluster-8094 -p 172.19.129.18:8094:8094  -v F:\docker_demo\program\config-server-cluster-8094.jar:/home/config-server-cluster-8094.jar -v F:\docker_demo\logs\config-server-cluster-8094:/home/logs/ xqsong/ubuntu-jdk:v1 java -jar /home/config-server-cluster-8094.jar
+
+
+
+
+
